@@ -1,0 +1,85 @@
+Hive has been one of the preferred tool for performing queries on large datasets, especially when full table scan is done on the datasets.
+In the case of tables which are not partitioned, all the files in a table’s data directory is read and then filters are applied on it as a subsequent phase. This becomes a slow and expensive affair especially in cases of large tables.
+Without partitioning Hive reads all the data in the directory and applies the query filters on it. This is slow and expensive since all data has to be read.
+Very often users need to filter the data on specific column values. To apply the partitioning in hive , users need to understand the domain of the data on which they are doing analysis.
+With this knowledge, identification of the frequently queried or accessesd columns becomes easy and then partitioning feature of Hive can be applied on the selected columns.
+Owing the fact that Partitions are horizontal slices of data,larger sets of data can be separated into more manageable chunks.
+In this blog we are going to discuss about partitioning in Hive and ways to use it. The problem with hive is that when we apply where clause then even a simple query in Hive reads the entire dataset.
+This decreases the efficiency and becomes a bottleneck when we are required to run the queries on large tables.
+This issue can be overcome by implementing partitions in hive.
+When to use Hive Partitioning:
+When any user wants data contained within a table to be split across multiple sections in hive table, use of partition is suggested.
+The entries for the various columns of dataset are segregated and stored in their respective partition. When we write the query to fetch the values from table , only the required partitions of the table are queried, which reduces the time taken by query to yield the result.
+A scenario for partitioning:
+Let’s take a scenario:
+•	Data is present in hdfs coming in from various ecommerce companies.
+•	We need to run the HiveQl queries on user buying pattern.
+•	We need to analyse data coming in from last 10 days.
+In the above scenario instead of running the queries which involves scanning of entire table, an approach should be followed where query runs on only last 10 days of data.
+
+Using a database:
+ 
+Creating a table:
+ 
+We can see the details of the partitioned table by using the script describe formatted table_name;
+ 
+Classification of partitioning:
+•	Static partitioning
+•	Dynamic partitioning.
+When to use static partitioning:
+Static partitioning needs to be applied when we know data(supposed to be inserted) belongs to which partition.
+Refer the below section to get a complete picture of static partitioning:
+Steps for static partitioning:
+1.Creating input files for partitioning:
+Let’s take two input file:
+user_info
+ 
+user_info1
+ 
+2.Copying the input files:
+The above two input files need to be copied into table further subdivided into partitions divided on the basis of country and state.
+user_info data needs to be copied into the section of table having partitions as country = us and state = fl.
+ 
+user_info1 data needs to be copied into the section of table having partitions as country = ca and state = au.
+ 
+3.Retrieving the user information:
+If anyone wants to retrieve the user information belonging to partition with country  us and state fl, query needs to be written as shown below.
+ 
+Hive will retrieve the data from the section with data having partition with country ‘us’ and state as ‘fl’ and earlier way of searching the entire table for one query will be avoided.
+Similarly if the user information from country ‘ca’ and state ‘au’ has to be retrieved than we need to fire the below query. 
+ 
+4.Browsing the HDFS:
+This section describes viewing of partitions in hive warehouse directory.
+The table par_user has been subdivided into two partitions with two different directory.
+When to use dynamic partitioning:
+In static partitioning every partitioning needs to be backed with individual hive statement which is not feasible for large number of partitions as it will require writing of lot of hive statements.
+In that scenario dynamic partitioning is suggested as we can create as many number of partitions with single hive statement.
+This approach is explained in the below section:
+Steps for Dynamic partitioning:
+1.Creating tables:
+We need to create the partitioned table par_user as shown below.
+This table will be populated with the contents from table user1 and partitions will be created based on country and state.
+ 
+In next phase user1 table needs to be created with all the columns including country and state.
+ 
+2.Creating input file for dynamic partitioning:
+ 
+3.Loading input file into user1 table:
+The above dataset needs to be copied into table user1.
+ 4.Setting of parameters for dynamic partitioning:
+To use the dynamic partitioning in hive we need to set the below parameters in hive shell or in hive-site.xml file.
+In this case we have set the below properties in hive shell.
+ 
+5.Retrieving data from partitioned table:
+We need to copy the file from user1 to partitioned table par_user and then retriving the data from it all together using insert and select statement in one hive statement.
+ 
+ 
+6.Browsing the directory:
+Two partitions got created in the below hive warehouse path as the dataset has two countries and states.
+Below screenshot shows the path of the partition with country as us and state as fl.
+The below screenshot shows:
+•	The command to display the records present in different partition.
+•	The actual records in the partition.
+ 
+                                                                             
+
